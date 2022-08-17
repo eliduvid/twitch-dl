@@ -21,6 +21,11 @@ for version in data.keys():
     changes = data[version]["changes"]
     print(f"### [{version} ({date})](https://github.com/ihabunek/twitch-dl/releases/tag/{version})")
     print()
+
+    if "description" in data[version]:
+        print(data[version]["description"])
+        print()
+
     for c in changes:
         lines = textwrap.wrap(c, 78)
         initial = True
