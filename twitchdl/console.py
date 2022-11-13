@@ -236,6 +236,16 @@ COMMANDS = [
         ],
     ),
     Command(
+        name="chat",
+        description="Download chat for a given video.",
+        arguments=[
+            (["video"], {
+                "help": "Video ID, clip slug, or URL",
+                "type": str,
+            }),
+        ],
+    ),
+    Command(
         name="info",
         description="Print information for a given Twitch URL, video ID or clip slug.",
         arguments=[

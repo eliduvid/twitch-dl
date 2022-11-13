@@ -93,7 +93,7 @@ CLIP_PATTERNS = [
 ]
 
 
-def parse_video_identifier(identifier):
+def parse_video_identifier(identifier: str) -> str:
     """Given a video ID or URL returns the video ID, or null if not matched"""
     for pattern in VIDEO_PATTERNS:
         match = re.match(pattern, identifier)

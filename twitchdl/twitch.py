@@ -4,7 +4,7 @@ Twitch API access.
 
 import httpx
 
-from typing import Dict
+from typing import Dict, Optional
 from twitchdl import CLIENT_ID
 from twitchdl.exceptions import ConsoleError
 
@@ -360,3 +360,47 @@ def get_game_id(name):
     game = response["data"]["game"]
     if game:
         return game["id"]
+
+
+def get_video_chat(video_id: str, offset_seconds: int = None, cursor: Optional[str] = None):
+    query = f"""
+    {{
+        "operationName": "VideoCommentsByOffsetOrCursor",
+        "variables": {{
+            "videoID": "{video_id}",
+            "contentOffsetSeconds": {offset_seconds},
+            "cursor": {cursor}
+        }},
+        "extensions": {{
+            "persistedQuery": {{
+                "version": 1,
+                "sha256Hash": "b70a3591ff0f4e0313d126c6a1502d79a1c02baebb288227c582044aa76adf6a"
+            }}
+        }}
+    }}
+    """
+
+    response = gql_post(query.strip())
+    return response["data"]["video"]["comments"]
+
+
+def page_query(channel_id, max_videos, sort, type, game_ids=None):
+    def _generator(videos, max_videos):
+        for video in videos["edges"]:
+            if max_videos < 1:
+                return
+            yield video["node"]
+            max_videos -= 1
+
+        has_next = videos["pageInfo"]["hasNextPage"]
+        if max_videos < 1 or not has_next:
+            return
+
+        limit = min(max_videos, 100)
+        cursor = videos["edges"][-1]["cursor"]
+        videos = get_channel_videos(channel_id, limit, sort, type, game_ids, cursor)
+        yield from _generator(videos, max_videos)
+
+    limit = min(max_videos, 100)
+    videos = get_channel_videos(channel_id, limit, sort, type, game_ids)
+    return videos["totalCount"], _generator(videos, max_videos)
